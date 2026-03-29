@@ -1,8 +1,8 @@
 node_modules/
-dist/
 .env
+dist/
+android/app/build/
+android/.gradle/
+android/local.properties
+/tmp/
 *.log
-.DS_Store
-Thumbs.db
-uploads/
-prisma/dev.db

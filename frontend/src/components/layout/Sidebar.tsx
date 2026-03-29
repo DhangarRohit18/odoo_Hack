@@ -4,8 +4,11 @@ import { LayoutDashboard, FilePlus, ScrollText, UserCheck, ShieldCheck, LogOut, 
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { usePWA } from '@/App';
+import { Download } from 'lucide-react';
 
 const Sidebar = () => {
+  const { handleInstallClick } = usePWA();
   const NavItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => (
     <NavLink
       to={to}
@@ -46,6 +49,16 @@ const Sidebar = () => {
         <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest px-4 mt-6 mb-2">Management</div>
         <NavItem to="/approvals" icon={UserCheck} label="Approvals" />
         <NavItem to="/admin" icon={ShieldCheck} label="Admin Panel" />
+
+        <div className="mt-auto px-4 pt-6">
+          <button 
+            onClick={handleInstallClick}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-accent-success/10 text-accent-success rounded-lg hover:bg-accent-success/20 transition-all border border-accent-success/20 group"
+          >
+            <Download size={20} className="group-hover:animate-bounce" />
+            <span className="font-bold text-sm">Download App</span>
+          </button>
+        </div>
       </nav>
 
       <div className="p-4 border-t border-white/5">

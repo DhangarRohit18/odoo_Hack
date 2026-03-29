@@ -120,8 +120,13 @@ const SubmitExpense = () => {
     try {
        await api.post('/expenses/submit', { ...data, confidenceScore: ocrData?.confidenceScore });
        alert('Expense submitted successfully!');
-    } catch (err) {
-       alert('Submission failed');
+    } catch (err: any) {
+       if (!navigator.onLine || err.message === 'Network Error') {
+          saveDraft(data);
+          alert('You are offline. Expense saved as a draft and will sync later.');
+       } else {
+          alert('Submission failed');
+       }
     }
   };
 
@@ -149,7 +154,7 @@ const SubmitExpense = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-5 space-y-6">
            <div className="card border-none shadow-2xl min-h-[500px] flex flex-col items-center justify-center border-4 border-dashed border-gray-100 relative group overflow-hidden bg-gray-50/30">
-              <input type="file" accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
+              <input type="file" accept="image/*" capture="environment" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer z-20" />
               
               <AnimatePresence mode="wait">
                 {previewUrl ? (
