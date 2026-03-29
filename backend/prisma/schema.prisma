@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id            String         @id @default(uuid())
+  name          String
+  baseCurrency  String         @default("USD")
+  users         User[]
+  approvalRules ApprovalRule[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model User {
+  id                String            @id @default(uuid())
+  email             String            @unique
+  password          String
+  name              String
+  role              String            @default("EMPLOYEE") // ADMIN, MANAGER, EMPLOYEE, FINANCE, DIRECTOR, CFO
+  country           String?
+  companyId         String?
+  company           Company?          @relation(fields: [companyId], references: [id])
+  managerId         String?
+  manager           User?             @relation("ManagerToEmployee", fields: [managerId], references: [id])
+  employees         User[]            @relation("ManagerToEmployee")
+  expenses          Expense[]
+  expenseApprovals  ExpenseApproval[] @relation("ApproverToExpense")
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Expense {
+  id              String            @id @default(uuid())
+  amount          Float
+  currency        String
+  convertedAmount Float?
+  category        String
+  date            DateTime
+  description     String?
+  receiptUrl      String?
+  trustScore      Float             @default(100)
+  riskLevel       String            @default("Safe")
+  status          String            @default("PENDING")
+  explanation     String?
+  userId          String
+  user            User              @relation(fields: [userId], references: [id])
+  approvals       ExpenseApproval[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model ApprovalRule {
+  id                   String         @id @default(uuid())
+  companyId            String
+  company              Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name                 String
+  isManagerFirst       Boolean        @default(true)
+  percentageReq        Int?
+  specificApproverRole String?
+  steps                ApprovalStep[]
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+}
+
+model ApprovalStep {
+  id        String       @id @default(uuid())
+  ruleId    String
+  rule      ApprovalRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  stepOrder Int
+  role      String       // E.g. 'FINANCE', 'DIRECTOR'
+}
+
+model ExpenseApproval {
+  id         String   @id @default(uuid())
+  expenseId  String
+  expense    Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  approverId String
+  approver   User     @relation("ApproverToExpense", fields: [approverId], references: [id])
+  stepOrder  Int
+  status     String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  comments   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model CurrencyRate {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  rate        Float
+  lastUpdated DateTime @default(now())
+}
